@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "data-engineer-jobs-scraping"
+version = "0.1.0"
+description = ""
+authors = ["Guilherme Samuel <guilhermesamuel79@gmail.com>"]
+readme = "README.md"
+packages = [{include = "data_engineer_jobs_scraping", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+selenium = "^4.27.1"
+python-dotenv = "^1.0.1"
+beautifulsoup4 = "^4.12.3"
+requests = "^2.32.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
