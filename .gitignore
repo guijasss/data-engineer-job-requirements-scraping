@@ -1,2 +1,5 @@
 .env
 .idea
+*.wal
+*.db
+*.duckdb
