@@ -51,7 +51,7 @@ def parse_relative_date(relative_date: str) -> date:
   # Separar o número e a unidade
   parts = cleaned_str.split(" ")
   if len(parts) != 2:
-    raise ValueError("Formato inválido. Use strings como 'há 3 dias', 'há 1 mês'.")
+    raise ValueError(f"Formato inválido: {relative_date}. Use strings como 'há 3 dias', 'há 1 mês'.")
 
   # Obter o valor e a unidade
   try:
@@ -68,3 +68,39 @@ def parse_relative_date(relative_date: str) -> date:
   calculated_date = today - timedelta(days=days_to_subtract)
 
   return calculated_date
+
+
+def parse_job_details(details_list):
+  """
+  Parseia os detalhes de uma vaga do LinkedIn a partir de uma lista de strings,
+  mapeando informações como local de trabalho, tipo de emprego e senioridade.
+  """
+  mapping = {
+    "Remoto": "local_de_trabalho",
+    "Híbrido": "local_de_trabalho",
+    "Presencial": "local_de_trabalho",
+    "Tempo integral": "tipo_de_emprego",
+    "Meio período": "tipo_de_emprego",
+    "Freelance": "tipo_de_emprego",
+    "Contrato": "tipo_de_emprego",
+    "Estágio": "tipo_de_emprego",
+    "Temporário": "tipo_de_emprego",
+    "Estagiário": "senioridade",
+    "Júnior": "senioridade",
+    "Pleno": "senioridade",
+    "Sênior": "senioridade",
+    "Gerente": "senioridade",
+    "Diretor": "senioridade"
+  }
+
+  # Estrutura inicial para armazenar os resultados
+  parsed_details = {"local_de_trabalho": None, "tipo_de_emprego": None, "senioridade": None}
+
+  # Itera sobre cada detalhe e aplica o mapeamento
+  for detail in details_list:
+    for key, category in mapping.items():
+      if key in detail:
+        parsed_details[category] = key
+
+  return parsed_details
+

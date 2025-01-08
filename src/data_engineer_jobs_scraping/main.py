@@ -3,6 +3,7 @@ from time import sleep
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 
+from src.data_engineer_jobs_scraping.entities import Job, setup_database
 # Importações do projeto
 from src.data_engineer_jobs_scraping.helpers import human_scroll, parse_relative_date
 from src.data_engineer_jobs_scraping.login import linkedin_login
@@ -16,7 +17,7 @@ print("Página atual:", driver.title)
 
 # Navegar para a página de busca de vagas no LinkedIn
 driver.get("https://www.linkedin.com/jobs/search/?keywords=dados")
-sleep(6)  # Aguarde o carregamento da página
+sleep(8)  # Aguarde o carregamento da página
 
 # Localizar o elemento scrollable (lista de vagas) e realizar scroll
 scrollable_element = driver.find_element(
@@ -35,52 +36,52 @@ li_items = soup.find_all('li', id=compile('^ember', IGNORECASE))
 
 # Iterar sobre as vagas para extrair informações
 for job in li_items:
-    try:
-        # Extrair o título da vaga
-        title = job.find('span', {'aria-hidden': 'true'}).find('strong')
-        if title:
-            print("Título da vaga:", title.get_text(strip=True))
+    # Extrair o título da vaga
+    title = job.find('span', {'aria-hidden': 'true'}).find('strong').get_text(strip=True)
+    company = job.find('span', {'class': 'OwgzJguXcQNsRVHZZFUEBcOUkdGaGEpKMphm'}).get_text(strip=True)
 
-        # Clicar na vaga para exibir detalhes
-        element_id = job['id']
-        job_ad = driver.find_element(By.ID, element_id)
-        job_ad.click()
-        sleep(2)  # Aguarde o carregamento dos detalhes da vaga
+    # Clicar na vaga para exibir detalhes
+    element_id = job['id']
+    job_ad = driver.find_element(By.ID, element_id)
+    job_ad.click()
+    sleep(2)  # Aguarde o carregamento dos detalhes da vaga
 
-        # Obter o HTML atualizado e analisar os detalhes da vaga
-        html = driver.page_source
-        soup = BeautifulSoup(html, "html.parser")
-        job_details_div = soup.find('div', id='job-details').find('p', {'dir': 'ltr'})
+    # Obter o HTML atualizado e analisar os detalhes da vaga
+    html = driver.page_source
+    soup = BeautifulSoup(html, "html.parser")
 
-        list_items = soup.find_all("li", class_="job-details-jobs-unified-top-card__job-insight")
-        for item in [list_items[0]]: # Extrair a localidade, senioridade e período de trabalho
-            spans = item.find_all("span", dir="ltr")
-            for span in spans[:3]:
-                print(span.get_text(strip=True))
+    list_items = soup.find_all("li", class_="job-details-jobs-unified-top-card__job-insight")
+    items = [item.get_text(strip=True) for item in list_items[0].find_all("span", dir="ltr")]
+    job_additional_details = " # ".join(items)
 
-        from_and_date_items = (soup
-                               .find("div", class_="t-black--light mt2")
-                               .find_all("span", class_="tvm__text tvm__text--low-emphasis")
-                               )
+    from_and_date_items = (soup
+                           .find("div", class_="t-black--light mt2")
+                           .find_all("span", class_="tvm__text tvm__text--low-emphasis")
+                           )
 
-        job_from = from_and_date_items[0].get_text(strip=True)
-        raw_estimated_announcement_date = " ".join(from_and_date_items[2].get_text().split(" ")[-3:])
-        print(raw_estimated_announcement_date)
-        print(job_from)
-        print(parse_relative_date(raw_estimated_announcement_date))
+    job_from = from_and_date_items[0].get_text(strip=True)
+    announced_at = " ".join(from_and_date_items[2].get_text().split(" ")[-3:])
 
-        # Extrair e exibir o texto dos detalhes da vaga
-        if job_details_div:
-            text = job_details_div.get_text(separator="\n").strip()
-            print("Detalhes da vaga:")
-            print(text)
-        else:
-            print("Detalhes da vaga não encontrados.")
-        break
+    job_details_div = soup.find('div', id='job-details').find('p', {'dir': 'ltr'})
+    # Extrair e exibir o texto dos detalhes da vaga
+    if job_details_div:
+        description = job_details_div.get_text(separator="\n").strip()
+        #print("Detalhes da vaga:")
+        #print(text)
+    else:
+        description = None
 
-    except Exception as e:
-        print(f"Erro ao processar a vaga: {e}")
-        break  # Remova isso para continuar mesmo após erros
+    job = Job(
+        title=title,
+        company=company,
+        job_from=job_from,
+        description=description,
+        announced_at=announced_at,
+        job_additional_details=job_additional_details
+    )
 
-# Encerrar a execução com uma pausa longa para depuração (se necessário)
-sleep(90)
+    print(job)
+    session = setup_database('duckdb')
+    session.add(job)
+    session.commit()
+    session.close()
