@@ -1,7 +1,7 @@
-from datetime import date
+from datetime import datetime
 from hashlib import sha256
 
-from sqlalchemy import create_engine, Column, String, Text, Date
+from sqlalchemy import create_engine, Column, String, Text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 
@@ -17,7 +17,7 @@ class Job(Base):
     job_additional_details = Column(String, nullable=True)
     description = Column(Text, nullable=True)
     announced_at = Column(Text, nullable=True)
-    created_at = Column(Date, nullable=False)
+    created_at = Column(DateTime, nullable=False)
 
     def __init__(self,
                  title: str,
@@ -33,7 +33,7 @@ class Job(Base):
         self.job_additional_details = job_additional_details
         self.description = description
         self.announced_at = announced_at
-        self.created_at = date.today()
+        self.created_at = datetime.now()
 
     def __str__(self):
         return (f"ID: {self.id}\n"
