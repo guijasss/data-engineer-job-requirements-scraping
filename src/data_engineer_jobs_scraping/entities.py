@@ -16,6 +16,7 @@ class Job(Base):
     job_from = Column(String, nullable=False)
     job_additional_details = Column(String, nullable=True)
     description = Column(Text, nullable=True)
+    url = Column(Text, nullable=False)
     announced_at = Column(Text, nullable=True)
     created_at = Column(DateTime, nullable=False)
 
@@ -25,6 +26,7 @@ class Job(Base):
                  job_from: str,
                  job_additional_details: str,
                  description: str,
+                 url: str,
                  announced_at: str):
         self.id = self.generate_id(title, company, announced_at)
         self.title = title
@@ -32,6 +34,7 @@ class Job(Base):
         self.job_from = job_from
         self.job_additional_details = job_additional_details
         self.description = description
+        self.url = url
         self.announced_at = announced_at
         self.created_at = datetime.now()
 
@@ -42,6 +45,7 @@ class Job(Base):
                 f"Job from: {self.job_from}\n"
                 f"Job additional details: {self.job_additional_details}\n"
                 f"Description: {self.description}\n"
+                f"URL: {self.url}\n"
                 f"Announced at: {self.announced_at}\n"
                 f"Created at: {self.created_at.strftime('%Y-%m-%d')}")
 
