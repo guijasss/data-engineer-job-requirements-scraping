@@ -4,9 +4,9 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import traceback
 
-from src.data_engineer_jobs_scraping.entities import Job, setup_database
-from src.data_engineer_jobs_scraping.helpers import human_scroll
-from src.data_engineer_jobs_scraping.login import linkedin_login
+from src.entities import Job, setup_database
+from src.helpers import human_scroll
+from src.login import linkedin_login
 
 # Configuração inicial e login no LinkedIn
 driver = linkedin_login()
